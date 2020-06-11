@@ -108,7 +108,7 @@ var app = require('express')();
 var http = require('http').createServer(app);
 const io = require('socket.io');
 const server = io(http);
-const PORT = 3000;/// process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 console.log('start');
 
@@ -119,15 +119,12 @@ const SERVER_URL =
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
   socket.on('carMoveStart', (key) => {
-    console.log('carMoveStart', key);
     socket.broadcast.emit('carMoveStart', key);
   });
   socket.on('carMoveStop', (key) => {
-    console.log('carMoveStop', key);
     socket.broadcast.emit('carMoveStop', key);
   });
   socket.on('newCar', () => {
-    console.log('newCar');
     socket.broadcast.emit('newCar', SERVER_URL, 0, 0);
   });
   socket.on('getLand', async function (lx, lz) {
