@@ -112,9 +112,19 @@ const PORT = process.env.PORT || 3000;
 
 console.log('start');
 
+const SERVER_URL = 'https://obscure-beach-59838.herokuapp.com/';
+
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
-  socket.on('carMove', function (msg) { console.log(socket.id, msg); });
+  socket.on('carMoveStart', (key) => {
+    socket.emit('carMoveStart', key);
+  });
+  socket.on('carMoveStop', (key) => {
+    socket.emit('carMoveStop', key);
+  });
+  socket.on('newCar', () => {
+    server.emit('newCar', SERVER_URL, 0, 0);
+  });
   socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
