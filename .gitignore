@@ -1,4 +1,5 @@
 node_modules
 dist
 *.t
-node-js-getting-started/
+package-lock.json
+package-lock.json
