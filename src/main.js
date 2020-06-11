@@ -115,7 +115,7 @@ console.log('start');
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
   socket.on('carMove', function (msg) { console.log(socket.id, msg); });
-  socket.on('getLand', function (lx, lz) {
+  socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
   });
