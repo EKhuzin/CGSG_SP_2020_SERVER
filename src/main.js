@@ -112,21 +112,21 @@ const PORT = process.env.PORT || 3000;
 
 console.log('start');
 
-const SERVER_URL = 'https://obscure-beach-59838.herokuapp.com/';
+const SERVER_URL = 'https://warm-woodland-80018.herokuapp.com/';
 
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
   socket.on('carMoveStart', (key) => {
     console.log('carMoveStart', key);
-    socket.emit('carMoveStart', key);
+    socket.broadcast.emit('carMoveStart', key);
   });
   socket.on('carMoveStop', (key) => {
     console.log('carMoveStop', key);
-    socket.emit('carMoveStop', key);
+    socket.broadcast.emit('carMoveStop', key);
   });
   socket.on('newCar', () => {
     console.log('newCar');
-    server.emit('newCar', SERVER_URL, 0, 0);
+    socket.broadcast.emit('newCar', SERVER_URL, 0, 0);
   });
   socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
