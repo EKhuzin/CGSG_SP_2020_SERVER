@@ -104,26 +104,23 @@ class GetLandAttributes {
   }
 }
 
+const PORT = process.env.PORT || 3000;
+var express = require('express');
+const server = express()
+  .use((req, res) => res.send('<h1>This is data server</h1>'))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
 const io = require('socket.io');
-const app = require('express')();
-const http = require('http').createServer(app);
-const server = io(http);
+
+// const http = require('http').createServer(app);
+const Server = io(server);
 
 console.log('start');
 
-app.get('/', (req, res) => {
-  res.send('<h1>This is data server</h1>');
-});
-
 const LandAttributes = new GetLandAttributes();
-server.on('connection', function (socket) {
+Server.on('connection', function (socket) {
   socket.on('carMove', function (msg) { console.log(socket.id, msg); });
   socket.on('getLand', function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
-    server.emit('addLand', tmp.ys, lx, lz);
+    Server.emit('addLand', tmp.ys, lx, lz);
   });
-});
-
-http.listen(3000, () => {
-  console.log('listening on *:3000');
 });
