@@ -105,9 +105,15 @@ class GetLandAttributes {
 }
 
 const io = require('socket.io');
-const server = io.listen(3000);
+const app = require('express')();
+const http = require('http').createServer(app);
+const server = io(http);
 
 console.log('start');
+
+app.get('/', (req, res) => {
+  res.send('<h1>This is data server</h1>');
+});
 
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
@@ -116,4 +122,8 @@ server.on('connection', function (socket) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
   });
+});
+
+http.listen(3000, () => {
+  console.log('listening on *:3000');
 });
