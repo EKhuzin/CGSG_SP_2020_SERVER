@@ -104,8 +104,11 @@ class GetLandAttributes {
   }
 }
 
+var app = require('express')();
+var http = require('http').createServer(app);
 const io = require('socket.io');
 const server = io.listen(3000);
+const PORT = process.env.PORT || 3000;
 
 console.log('start');
 
@@ -116,4 +119,12 @@ server.on('connection', function (socket) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
   });
+});
+
+app.get('/', (req, res) => {
+  res.send('<h1>Hello world</h1>');
+});
+
+http.listen(PORT, () => {
+  console.log('listening on *:3000');
 });
