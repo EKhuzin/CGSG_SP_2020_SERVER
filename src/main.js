@@ -113,19 +113,24 @@ const PORT = process.env.PORT || 3000;
 console.log('start');
 
 const SERVER_URL =
-// 'localhost:3000';
-'https://warm-woodland-80018.herokuapp.com/';
+'localhost:3000';
+// 'https://warm-woodland-80018.herokuapp.com/';
+
+const Cars = new Set();
 
 const LandAttributes = new GetLandAttributes();
 server.on('connection', function (socket) {
-  socket.on('carMoveStart', (key) => {
-    socket.broadcast.emit('carMoveStart', key);
-  });
-  socket.on('carMoveStop', (key) => {
-    socket.broadcast.emit('carMoveStop', key);
-  });
-  socket.on('newCar', () => {
-    socket.broadcast.emit('newCar', SERVER_URL, 0, 0);
+  socket.on('newCar', (id) => {
+    Cars.add(id);
+    server.of('/' + id).on('connect', (newCarSocket) => {
+      newCarSocket.on('carMoveTo', (x, z) => {
+        newCarSocket.broadcast.emit('carMoveTo', x, z);
+      });
+    });
+    server.emit('newCar', SERVER_URL + '/' + id, 0, 0);
+    Cars.forEach((i) => {
+      socket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
+    });
   });
   socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
