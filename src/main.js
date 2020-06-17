@@ -125,8 +125,8 @@ const PORT = process.env.PORT || 3000;
 console.log('start');
 
 const SERVER_URL =
-'localhost:3000';
-// 'https://warm-woodland-80018.herokuapp.com/';
+// 'localhost:3000';
+'https://warm-woodland-80018.herokuapp.com/';
 
 const Cars = new Set();
 const Users = new Set();
