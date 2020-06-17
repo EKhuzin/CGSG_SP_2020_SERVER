@@ -1,23 +1,35 @@
 const LAND_SIDE = 128;
 const LAND_SIDEP1 = LAND_SIDE + 1;
-const LAND_MAX_H = 150;
+const LAND_STEP_H = 80;
 
 const randCache = [];
 
 function getCertainH (lx, lz) {
-  let value;
+  let value, x, z;
   if (randCache[lx] !== undefined) {
-    if (randCache[lx][lz] !== undefined) {
-      return randCache[lx][lz];
+    if (randCache[lx][lz] !== undefined) { return randCache[lx][lz]; }
+  } else { randCache[lx] = {}; }
+
+  let cnt = 0;
+  for (x = -1; x <= 1; x++) {
+    if (randCache[lx + x] !== undefined) {
+      for (z = -1; z <= 1; z++) {
+        if (randCache[lx + x][lz + z] !== undefined) {
+          if (value === undefined) { value = 0; }
+          value += randCache[lx + x][lz + z]; // + (Math.random() * 2 - 1) * LAND_STEP_H;
+          cnt++;
+        }
+      }
     }
-    value = Math.random() * LAND_MAX_H;
-    randCache[lx][lz] = value;
-    return value;
   }
-  value = Math.random() * LAND_MAX_H;
-  randCache[lx] = {};
-  randCache[lx][lz] = value;
-  return value;
+
+  if (value !== undefined) {
+    value /= cnt;
+    randCache[lx][lz] = value + (Math.random() * 2 - 1) * LAND_STEP_H;
+  } else {
+    randCache[lx][lz] = (Math.random() * 2 - 1) * LAND_STEP_H;
+  }
+  return randCache[lx][lz];
 }
 
 function createGetH (landX, landZ) {
@@ -104,8 +116,8 @@ class GetLandAttributes {
   }
 }
 
-var app = require('express')();
-var http = require('http').createServer(app);
+const app = require('express')();
+const http = require('http').createServer(app);
 const io = require('socket.io');
 const server = io(http);
 const PORT = process.env.PORT || 3000;
@@ -119,6 +131,9 @@ const SERVER_URL =
 const Cars = new Set();
 
 const LandAttributes = new GetLandAttributes();
+
+randCache[0] = {};
+randCache[0][0] = Math.random() * LAND_STEP_H;
 server.on('connection', function (socket) {
   socket.on('newCar', (id) => {
     Cars.add(id);
@@ -127,9 +142,9 @@ server.on('connection', function (socket) {
         newCarSocket.broadcast.emit('carMoveTo', x, z);
       });
     });
-    server.emit('newCar', SERVER_URL + '/' + id, 0, 0);
+    // server.emit('newCar', SERVER_URL + '/' + id, 0, 0);
     Cars.forEach((i) => {
-      socket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
+      server.to(socket.id).emit('newCar', SERVER_URL + '/' + i, 0, 0);
     });
   });
   socket.on('getLand', async function (lx, lz) {
