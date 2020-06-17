@@ -16,7 +16,7 @@ function getCertainH (lx, lz) {
       for (z = -1; z <= 1; z++) {
         if (randCache[lx + x][lz + z] !== undefined) {
           if (value === undefined) { value = 0; }
-          value += randCache[lx + x][lz + z]; // + (Math.random() * 2 - 1) * LAND_STEP_H;
+          value += randCache[lx + x][lz + z];
           cnt++;
         }
       }
@@ -129,11 +129,13 @@ const SERVER_URL =
 // 'https://warm-woodland-80018.herokuapp.com/';
 
 const Cars = new Set();
+const Users = new Set();
 
 const LandAttributes = new GetLandAttributes();
 
 randCache[0] = {};
 randCache[0][0] = Math.random() * LAND_STEP_H;
+
 server.on('connection', function (socket) {
   socket.on('newCar', (id) => {
     Cars.add(id);
@@ -142,11 +144,20 @@ server.on('connection', function (socket) {
         newCarSocket.broadcast.emit('carMoveTo', x, z);
       });
     });
-    // server.emit('newCar', SERVER_URL + '/' + id, 0, 0);
-    Cars.forEach((i) => {
-      server.to(socket.id).emit('newCar', SERVER_URL + '/' + i, 0, 0);
+  });
+
+  socket.on('newUser', (id) => {
+    server.of('/' + id).on('connect', (newCarSocket) => {
+      Cars.forEach((i) => {
+        newCarSocket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
+      });
+      Users.forEach((i) => {
+        server.of('/' + i).emit('newCar', SERVER_URL + '/' + id, 0, 0);
+      });
+      Users.add(id);
     });
   });
+
   socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
