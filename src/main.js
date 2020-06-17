@@ -125,8 +125,8 @@ const PORT = process.env.PORT || 3000;
 console.log('start');
 
 const SERVER_URL =
-// 'localhost:3000';
-'https://warm-woodland-80018.herokuapp.com/';
+'localhost:3000';
+// 'https://warm-woodland-80018.herokuapp.com/';
 
 const Cars = new Set();
 const Users = new Set();
@@ -137,24 +137,24 @@ randCache[0] = {};
 randCache[0][0] = Math.random() * LAND_STEP_H;
 
 server.on('connection', function (socket) {
-  socket.on('newCar', (id) => {
-    Cars.add(id);
-    server.of('/' + id).on('connect', (newCarSocket) => {
-      newCarSocket.on('carMoveTo', (x, z) => {
-        newCarSocket.broadcast.emit('carMoveTo', x, z);
+  socket.on('newUser', (id) => {
+    server.of('/' + id).on('connect', (newUSocket) => {
+      Cars.forEach((i) => {
+        newUSocket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
       });
+      Users.add(id);
     });
   });
 
-  socket.on('newUser', (id) => {
-    server.of('/' + id).on('connect', (newCarSocket) => {
-      Cars.forEach((i) => {
-        newCarSocket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
+  socket.on('newCar', (id) => {
+    Cars.add(id);
+    Users.forEach((i) => {
+      server.of('/' + i).emit('newCar', SERVER_URL + '/' + id, 0, 0);
+    });
+    server.of('/' + id).on('connect', (newCSocket) => {
+      newCSocket.on('carMoveTo', (x, z) => {
+        newCSocket.broadcast.emit('carMoveTo', x, z);
       });
-      Users.forEach((i) => {
-        server.of('/' + i).emit('newCar', SERVER_URL + '/' + id, 0, 0);
-      });
-      Users.add(id);
     });
   });
 
