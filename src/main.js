@@ -116,6 +116,7 @@ class GetLandAttributes {
   }
 }
 
+// const msgpack = require('msgpack-lite');
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io');
@@ -127,14 +128,17 @@ const Cars = new Map();
 const LandAttributes = new GetLandAttributes();
 
 randCache[0] = {};
-randCache[0][0] = Math.random() * LAND_STEP_H;
+randCache[0][0] = 70 + Math.random() * LAND_STEP_H;
 
 server.on('connection', function (socket) {
+  let CarId;
   socket.on('newCar', async (id, x, z) => {
-    Cars.set(id, { id: id, x: x, z: z });
     Cars.forEach((c) => {
-      server.emit('newCar', c.id, c.x, c.z);
+      server.to(socket.id).emit('newCar', c.id, c.x, c.z);
     });
+    CarId = id;
+    server.emit('newCar', id, x, z);
+    Cars.set(id, { id: id, x: x, z: z });
   });
 
   socket.on('carMoveTo', async (id, x, z) => {
@@ -148,9 +152,10 @@ server.on('connection', function (socket) {
     server.emit('addLand', tmp.ys, lx, lz);
   });
 
-  // socket.on('disconnect', (id) => {
-  //   Cars.delete(id);
-  // });
+  socket.on('disconnecting', () => {
+    if (CarId !== undefined) { Cars.delete(CarId); }
+    socket.broadcast.emit('leaveCar', CarId);
+  });
 });
 
 app.get('/', (req, res) => {
