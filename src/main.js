@@ -122,12 +122,7 @@ const io = require('socket.io');
 const server = io(http);
 const PORT = process.env.PORT || 3000;
 
-const SERVER_URL =
-// 'localhost:3000';
-'https://warm-woodland-80018.herokuapp.com/';
-
-const Cars = new Set();
-const Users = new Set();
+const Cars = new Map();
 
 const LandAttributes = new GetLandAttributes();
 
@@ -135,31 +130,27 @@ randCache[0] = {};
 randCache[0][0] = Math.random() * LAND_STEP_H;
 
 server.on('connection', function (socket) {
-  socket.on('newUser', (id) => {
-    server.of('/' + id).on('connect', (newUSocket) => {
-      Cars.forEach((i) => {
-        newUSocket.emit('newCar', SERVER_URL + '/' + i, 0, 0);
-      });
-      Users.add(id);
+  socket.on('newCar', async (id, x, z) => {
+    Cars.set(id, { id: id, x: x, z: z });
+    Cars.forEach((c) => {
+      server.emit('newCar', c.id, c.x, c.z);
     });
   });
 
-  socket.on('newCar', (id) => {
-    Cars.add(id);
-    Users.forEach((i) => {
-      server.of('/' + i).emit('newCar', SERVER_URL + '/' + id, 0, 0);
-    });
-    server.of('/' + id).on('connect', (newCSocket) => {
-      newCSocket.on('carMoveTo', (x, z) => {
-        newCSocket.broadcast.emit('carMoveTo', x, z);
-      });
-    });
+  socket.on('carMoveTo', async (id, x, z) => {
+    socket.broadcast.emit('carMoveTo', id, x, z);
+    const tmp = Cars.get(id);
+    if (tmp !== undefined) { tmp.x = x; tmp.z = z; }
   });
 
   socket.on('getLand', async function (lx, lz) {
     const tmp = LandAttributes.getXZ(lx, lz);
     server.emit('addLand', tmp.ys, lx, lz);
   });
+
+  // socket.on('disconnect', (id) => {
+  //   Cars.delete(id);
+  // });
 });
 
 app.get('/', (req, res) => {
