@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EKhuzin/server.git"
+    "url": "git+https://github.com/EKhuzin/CGSG_SP_2020_SERVER.git"
   },
   "author": "Eldar Khuzin",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/EKhuzin/server/issues"
+    "url": "https://github.com/EKhuzin/CGSG_SP_2020_SERVER/issues"
   },
-  "homepage": "https://github.com/EKhuzin/server#readme"
+  "homepage": "https://github.com/EKhuzin/CGSG_SP_2020_SERVER#readme"
 }
